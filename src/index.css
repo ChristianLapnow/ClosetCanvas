@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --card: 0 0% 100%;
+    --ring: 258 90% 66%;
+    --input: 226 100% 94%;
+    --muted: 250 100% 98%;
+    --accent: 214 95% 93%;
+    --border: 226 100% 94%;
+    --chart-1: 258 90% 66%;
+    --chart-2: 262 83% 58%;
+    --chart-3: 263 70% 50%;
+    --chart-4: 263 69% 42%;
+    --chart-5: 264 67% 35%;
+    --popover: 0 0% 100%;
+    --primary: 258 90% 66%;
+    --sidebar: 250 100% 98%;
+    --font-mono: Fira Code, monospace;
+    --font-sans: Roboto, sans-serif;
+    --secondary: 252 100% 97%;
+    --background: 0 0% 100%;
+    --font-serif: Playfair Display, serif;
+    --foreground: 242 47% 34%;
+    --destructive: 0 84% 60%;
+    --shadow-blur: 4px;
+    --shadow-color: 255 86% 66%;
+    --sidebar-ring: 258 90% 66%;
+    --shadow-spread: 0px;
+    --shadow-opacity: 0.2;
+    --sidebar-accent: 214 95% 93%;
+    --sidebar-border: 226 100% 94%;
+    --card-foreground: 242 47% 34%;
+    --shadow-offset-x: 2px;
+    --shadow-offset-y: 2px;
+    --sidebar-primary: 258 90% 66%;
+    --muted-foreground: 262 83% 58%;
+    --accent-foreground: 226 71% 40%;
+    --popover-foreground: 242 47% 34%;
+    --primary-foreground: 0 0% 100%;
+    --sidebar-foreground: 242 47% 34%;
+    --secondary-foreground: 245 58% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --sidebar-accent-foreground: 226 71% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --radius: 0.625rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+  }
+}
+
+@layer utilities {
+  .font-outfit {
+    font-family: 'Outfit', sans-serif;
+  }
+  .font-cormorant {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .font-playfair {
+    font-family: 'Playfair Display', serif;
+  }
+  .font-dmsans {
+    font-family: 'DM Sans', sans-serif;
+  }
+}
