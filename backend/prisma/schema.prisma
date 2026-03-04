@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Better Auth Models ───────────────────────────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  coupleAsUser1 CoupleConnection[] @relation("CoupleUser1")
+  coupleAsUser2 CoupleConnection[] @relation("CoupleUser2")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ─── App Models ───────────────────────────────────────────────────────────────
+
+model ClothingItem {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  category    String
+  color       String
+  season      String
+  occasion    String
+  brand       String?
+  imageUrl    String?
+  notes       String?
+  isFavorite  Boolean  @default(false)
+  timesWorn   Int      @default(0)
+  lastWorn    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  outfitItems     OutfitItem[]
+  calendarEntries CalendarEntry[] @relation("PrimaryItem")
+}
+
+model Outfit {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  occasion    String?
+  mood        String?
+  rating      Int?
+  notes       String?
+  imageUrl    String?
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items           OutfitItem[]
+  calendarEntries CalendarEntry[]
+  compareOptions  CompareOption[]
+}
+
+model OutfitItem {
+  id            String @id @default(cuid())
+  outfitId      String
+  clothingItemId String
+
+  outfit        Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  clothingItem  ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+
+  @@unique([outfitId, clothingItemId])
+}
+
+model CalendarEntry {
+  id             String   @id @default(cuid())
+  userId         String
+  date           String
+  outfitId       String?
+  primaryItemId  String?
+  notes          String?
+  weather        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  outfit      Outfit?       @relation(fields: [outfitId], references: [id], onDelete: SetNull)
+  primaryItem ClothingItem? @relation("PrimaryItem", fields: [primaryItemId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, date])
+}
+
+model ShoppingItem {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  category    String
+  color       String?
+  brand       String?
+  price       Float?
+  url         String?
+  notes       String?
+  priority    String   @default("medium")
+  isPurchased Boolean  @default(false)
+  purchasedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Couple Mode Models ───────────────────────────────────────────────────────
+
+model CoupleConnection {
+  id         String   @id @default(cuid())
+  inviteCode String   @unique
+  user1Id    String
+  user2Id    String?
+  status     String   @default("pending") // "pending" | "active" | "dissolved"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user1           User             @relation("CoupleUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2           User?            @relation("CoupleUser2", fields: [user2Id], references: [id], onDelete: SetNull)
+  compareSession  CompareSession[]
+}
+
+model CompareSession {
+  id              String   @id @default(cuid())
+  coupleId        String
+  createdByUserId String
+  calendarDate    String?  // ISO date string, optional - to auto-plan winner
+  status          String   @default("open") // "open" | "voted" | "closed"
+  winnerOutfitId  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  couple  CoupleConnection @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  options CompareOption[]
+  votes   CompareVote[]
+}
+
+model CompareOption {
+  id            String @id @default(cuid())
+  sessionId     String
+  outfitId      String
+  addedByUserId String
+  position      Int    @default(0) // ordering 0,1,2
+
+  session CompareSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  outfit  Outfit         @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+}
+
+model CompareVote {
+  id            String   @id @default(cuid())
+  sessionId     String
+  votedByUserId String
+  outfitId      String   // which outfit they voted for
+  reaction      String?  // emoji reaction
+  comment       String?
+  createdAt     DateTime @default(now())
+
+  session CompareSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, votedByUserId]) // one vote per person per session
+}
